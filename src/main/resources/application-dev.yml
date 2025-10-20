@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sporconnect
+    username: postgres
+    password: tu_contraseña
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true

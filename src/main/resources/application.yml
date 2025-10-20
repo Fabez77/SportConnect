@@ -1,0 +1,6 @@
+spring:
+  profiles:
+    active: dev  # Cambia a test o prod según el entorno
+
+server:
+  port: 8080
