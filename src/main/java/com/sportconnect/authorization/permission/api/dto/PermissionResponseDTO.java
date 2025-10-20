@@ -1,17 +1,15 @@
-package com.sportconnect.user.domain.model;
-
+package com.sportconnect.authorization.permission.api.dto;
 
 import lombok.*;
-import java.util.Set;
+
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
+public class PermissionResponseDTO {
     private UUID id;
     private String name;
-    private Set<Permission> permissions;
+    private String description;
 }
-

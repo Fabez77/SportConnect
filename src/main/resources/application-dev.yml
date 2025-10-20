@@ -1,9 +1,11 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/sporconnect
+    url: jdbc:postgresql://localhost:5432/sportconnect
     username: postgres
-    password: tu_contraseña
+    password: sportconnect
+    driver-class-name: org.postgresql.Driver   # opcional, pero claro y explícito
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    open-in-view: false   # 🔑 recomendado para evitar el warning de "open-in-view"

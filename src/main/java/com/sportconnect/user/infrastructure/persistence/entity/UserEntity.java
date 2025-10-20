@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
+import com.sportconnect.authorization.role.infrastructure.persistence.entity.RoleEntity;
+
 @Entity
 @Table(name = "users")
 @Data

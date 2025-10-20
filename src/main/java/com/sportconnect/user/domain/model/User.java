@@ -5,6 +5,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import com.sportconnect.authorization.role.domain.model.Role;
+
 @Data
 @Builder
 @NoArgsConstructor
