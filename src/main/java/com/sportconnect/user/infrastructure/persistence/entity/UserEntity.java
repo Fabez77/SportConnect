@@ -22,7 +22,11 @@ public class UserEntity {
     private String username;
     private String email;
     private String dni;
-    private boolean isActive;
+
+    @Column(nullable = false)
+    private String password; // ✅ Campo agregado para almacenar el hash
+
+    private boolean ative;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

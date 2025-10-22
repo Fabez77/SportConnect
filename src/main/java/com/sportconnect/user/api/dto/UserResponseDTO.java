@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponseDTO {
@@ -12,6 +13,6 @@ public class UserResponseDTO {
     private String username;
     private String email;
     private String dni;
-    private boolean isActive;
+    private boolean active;
     private Set<String> roles;
 }

@@ -4,6 +4,7 @@ import lombok.*;
 import jakarta.validation.constraints.*;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateUserDTO {
@@ -19,5 +20,9 @@ public class CreateUserDTO {
     @NotBlank
     @Size(min = 8, max = 8)
     private String dni;
+
+    @NotBlank
+    @Size(min = 8, max = 100) // puedes ajustar el máximo si usas reglas más estrictas
+    private String password;
 }
 

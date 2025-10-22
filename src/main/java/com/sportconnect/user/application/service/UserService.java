@@ -5,6 +5,8 @@ import com.sportconnect.user.api.mapper.UserDtoMapper;
 import com.sportconnect.user.domain.model.User;
 import com.sportconnect.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,16 +17,23 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService implements UserServiceInterface {
 
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final UserDtoMapper mapper;
 
     @Override
     public UserResponseDTO createUser(CreateUserDTO dto) {
         User user = mapper.toDomain(dto);
+
+        // Hashear la contraseña antes de guardar
+        String hashedPassword = passwordEncoder.encode(dto.getPassword());
+        user.setPassword(hashedPassword);
+
         user.setId(UUID.randomUUID());
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         user.setActive(true);
+
         User saved = userRepository.save(user);
         return mapper.toResponse(saved);
     }

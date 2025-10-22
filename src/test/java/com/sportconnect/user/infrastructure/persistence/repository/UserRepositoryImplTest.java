@@ -31,7 +31,7 @@ class UserRepositoryImplTest {
                 .username("fabio")
                 .email("fabio@mail.com")
                 .dni("12345678")
-                .isActive(true)
+                .active(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();

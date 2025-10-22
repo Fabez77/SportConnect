@@ -3,9 +3,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/sportconnect
     username: postgres
     password: sportconnect
-    driver-class-name: org.postgresql.Driver   # opcional, pero claro y explícito
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-    open-in-view: false   # 🔑 recomendado para evitar el warning de "open-in-view"
+    open-in-view: false

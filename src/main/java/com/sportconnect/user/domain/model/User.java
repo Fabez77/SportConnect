@@ -1,6 +1,5 @@
 package com.sportconnect.user.domain.model;
 
-
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -16,18 +15,21 @@ public class User {
     private String username;
     private String email;
     private String dni;
-    private boolean isActive;
+
+    private String password; // ✅ Campo agregado para almacenar el hash
+
+    private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     private Set<Role> roles;
 
     public void activate() {
-        this.isActive = true;
+        this.active = true;
     }
 
     public void deactivate() {
-        this.isActive = false;
+        this.active = false;
     }
 
     public void assignRole(Role role) {
