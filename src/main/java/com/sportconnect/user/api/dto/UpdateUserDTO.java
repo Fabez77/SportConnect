@@ -15,5 +15,11 @@ public class UpdateUserDTO {
     @NotBlank
     @Email
     private String email;
+
+    @NotBlank
+    @Email
+    private String dni;
+
+    private Boolean active;
 }
 

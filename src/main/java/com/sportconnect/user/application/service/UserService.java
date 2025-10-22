@@ -23,6 +23,22 @@ public class UserService implements UserServiceInterface {
 
     @Override
     public UserResponseDTO createUser(CreateUserDTO dto) {
+
+        // Validar unicidad de username
+        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+        }
+
+        // Validar unicidad de email
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("El email ya está registrado");
+        }
+
+        // Validar unicidad de dni
+        if (userRepository.existsByDni(dto.getDni())) {
+            throw new IllegalArgumentException("El DNI ya está registrado");
+        }
+
         User user = mapper.toDomain(dto);
 
         // Hashear la contraseña antes de guardar
@@ -40,8 +56,25 @@ public class UserService implements UserServiceInterface {
 
     @Override
     public UserResponseDTO updateUser(UUID id, UpdateUserDTO dto) {
+
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        // Validar email duplicado (si cambió)
+        if (dto.getEmail() != null && !dto.getEmail().equalsIgnoreCase(user.getEmail())) {
+            userRepository.findByEmail(dto.getEmail()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new IllegalArgumentException("El email ya está en uso por otro usuario");
+                }
+            });
+        }
+
+        // Validar dni duplicado (si cambió)
+        if (dto.getDni() != null && !dto.getDni().equalsIgnoreCase(user.getDni())) {
+            if (userRepository.existsByDni(dto.getDni())) {
+                throw new IllegalArgumentException("El DNI ya está en uso por otro usuario");
+            }
+        }
         mapper.updateDomain(dto, user);
         user.setUpdatedAt(LocalDateTime.now());
         User updated = userRepository.save(user);

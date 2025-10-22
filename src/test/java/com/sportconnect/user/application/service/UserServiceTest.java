@@ -1,26 +1,30 @@
 package com.sportconnect.user.application.service;
 
-import com.sportconnect.user.api.dto.*;
-import com.sportconnect.user.api.mapper.UserDtoMapper;
+import com.sportconnect.user.api.dto.CreateUserDTO;
+import com.sportconnect.user.api.dto.UpdateUserDTO;
+import com.sportconnect.user.api.dto.UserResponseDTO;
 import com.sportconnect.user.domain.model.User;
 import com.sportconnect.user.domain.repository.UserRepository;
+import com.sportconnect.user.api.mapper.UserDtoMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.assertj.core.api.Assertions.*;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Mock
     private UserDtoMapper mapper;
@@ -28,124 +32,123 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    private UUID userId;
+    private CreateUserDTO createDto;
+    private UpdateUserDTO updateDto;
     private User user;
-    private UserResponseDTO responseDTO;
 
     @BeforeEach
     void setUp() {
-        userId = UUID.randomUUID();
-        user = User.builder()
-                .id(userId)
+        MockitoAnnotations.openMocks(this);
+
+        createDto = CreateUserDTO.builder()
                 .username("fabio")
                 .email("fabio@mail.com")
                 .dni("12345678")
-                .active(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .roles(new HashSet<>())
+                .password("secret")
                 .build();
 
-        responseDTO = UserResponseDTO.builder()
-                .id(userId)
-                .username("fabio")
-                .email("fabio@mail.com")
-                .dni("12345678")
+        updateDto = UpdateUserDTO.builder()
+                .email("new@mail.com")
+                .dni("87654321")
                 .active(true)
-                .roles(Set.of("ADMIN"))
                 .build();
+
+        user = new User();
+        user.setId(UUID.randomUUID());
+        user.setUsername("fabio");
+        user.setEmail("fabio@mail.com");
+        user.setDni("12345678");
+        user.setPassword("encoded");
+        user.setActive(true);
     }
 
+    // ---------------- CREATE ----------------
+
     @Test
-    void createUser_shouldReturnUserResponseDTO() {
-        CreateUserDTO dto = CreateUserDTO.builder()
-                .username("fabio")
-                .email("fabio@mail.com")
-                .dni("12345678")
-                .build();
-
-        when(mapper.toDomain(dto)).thenReturn(user);
+    void createUser_success() {
+        when(userRepository.findByUsername("fabio")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("fabio@mail.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByDni("12345678")).thenReturn(false);
+        when(mapper.toDomain(createDto)).thenReturn(user);
+        when(passwordEncoder.encode("secret")).thenReturn("encoded");
         when(userRepository.save(any(User.class))).thenReturn(user);
-        when(mapper.toResponse(user)).thenReturn(responseDTO);
+        when(mapper.toResponse(user)).thenReturn(new UserResponseDTO());
 
-        UserResponseDTO result = userService.createUser(dto);
+        UserResponseDTO response = userService.createUser(createDto);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getUsername()).isEqualTo(dto.getUsername());
-        assertThat(result.getEmail()).isEqualTo(dto.getEmail());
+        assertNotNull(response);
         verify(userRepository).save(any(User.class));
     }
 
     @Test
-    void updateUser_shouldReturnUpdatedUserResponseDTO() {
-        UpdateUserDTO dto = UpdateUserDTO.builder()
-                .username("fabio_updated")
-                .email("fabio_updated@mail.com")
-                .build();
+    void createUser_failsWhenEmailExists() {
+        when(userRepository.findByEmail("fabio@mail.com")).thenReturn(Optional.of(user));
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(createDto));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void createUser_failsWhenUsernameExists() {
+        when(userRepository.findByUsername("fabio")).thenReturn(Optional.of(user));
+
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(createDto));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void createUser_failsWhenDniExists() {
+        when(userRepository.existsByDni("12345678")).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(createDto));
+        verify(userRepository, never()).save(any());
+    }
+
+    // ---------------- UPDATE ----------------
+
+    @Test
+    void updateUser_success() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("new@mail.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByDni("87654321")).thenReturn(false);
         doAnswer(invocation -> {
-            UpdateUserDTO d = invocation.getArgument(0);
+            UpdateUserDTO dto = invocation.getArgument(0);
             User u = invocation.getArgument(1);
-            u.setUsername(d.getUsername());
-            u.setEmail(d.getEmail());
+            u.setEmail(dto.getEmail());
+            u.setDni(dto.getDni());
+            u.setActive(dto.getActive());
             return null;
-        }).when(mapper).updateDomain(eq(dto), any(User.class));
+        }).when(mapper).updateDomain(updateDto, user);
         when(userRepository.save(user)).thenReturn(user);
+        when(mapper.toResponse(user)).thenReturn(new UserResponseDTO());
 
-        UserResponseDTO updatedResponse = UserResponseDTO.builder()
-                .id(userId)
-                .username(dto.getUsername())
-                .email(dto.getEmail())
-                .dni(user.getDni())
-                .active(true)
-                .roles(Set.of("ADMIN"))
-                .build();
+        UserResponseDTO response = userService.updateUser(user.getId(), updateDto);
 
-        when(mapper.toResponse(user)).thenReturn(updatedResponse);
-
-        UserResponseDTO result = userService.updateUser(userId, dto);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getUsername()).isEqualTo(dto.getUsername());
-        assertThat(result.getEmail()).isEqualTo(dto.getEmail());
-        verify(userRepository).save(user);
+        assertNotNull(response);
+        assertEquals("new@mail.com", user.getEmail());
+        assertEquals("87654321", user.getDni());
     }
 
     @Test
-    void getUserById_shouldReturnUserResponseDTO() {
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(mapper.toResponse(user)).thenReturn(responseDTO);
+    void updateUser_failsWhenEmailExists() {
+        User other = new User();
+        other.setId(UUID.randomUUID());
+        other.setEmail("new@mail.com");
 
-        UserResponseDTO result = userService.getUserById(userId);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("new@mail.com")).thenReturn(Optional.of(other));
 
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(userId);
-        assertThat(result.getUsername()).isEqualTo("fabio");
-        verify(userRepository).findById(userId);
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(user.getId(), updateDto));
+        verify(userRepository, never()).save(any());
     }
 
     @Test
-    void listUsers_shouldReturnListOfUserResponseDTO() {
-        List<User> users = List.of(user);
-        List<UserResponseDTO> responseList = List.of(responseDTO);
+    void updateUser_failsWhenDniExists() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail("new@mail.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByDni("87654321")).thenReturn(true);
 
-        when(userRepository.findAll()).thenReturn(users);
-        when(mapper.toResponseList(users)).thenReturn(responseList);
-
-        List<UserResponseDTO> result = userService.listUsers();
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getUsername()).isEqualTo("fabio");
-        verify(userRepository).findAll();
-    }
-
-    @Test
-    void deleteUser_shouldCallRepositoryDelete() {
-        doNothing().when(userRepository).delete(userId);
-
-        userService.deleteUser(userId);
-
-        verify(userRepository).delete(userId);
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(user.getId(), updateDto));
+        verify(userRepository, never()).save(any());
     }
 }

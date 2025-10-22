@@ -19,7 +19,10 @@ public class UserEntity {
     @Id
     private UUID id;
 
+    @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(nullable = false, unique = true)
     private String email;
     private String dni;
 
