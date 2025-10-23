@@ -41,4 +41,9 @@ public class RoleRepositoryImpl implements RoleRepository {
     public void deleteById(UUID id) {
         jpaRepository.deleteById(id);
     }
+    @Override
+    public List<Role> findAllById(List<UUID> ids) {
+        List<RoleEntity> entities = jpaRepository.findAllById(ids);
+        return mapper.toDomainList(entities);
+    }
 }

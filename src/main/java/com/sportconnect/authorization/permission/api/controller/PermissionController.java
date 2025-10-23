@@ -3,7 +3,7 @@ package com.sportconnect.authorization.permission.api.controller;
 import com.sportconnect.authorization.permission.api.dto.*;
 import com.sportconnect.authorization.permission.application.service.PermissionServiceInterface;
 import com.sportconnect.shared.dto.ApiResponse;
-import com.sportconnect.shared.service.ApiResponseServiceInterface;
+import com.sportconnect.shared.service.ApiResponseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -18,7 +18,7 @@ import java.util.UUID;
 public class PermissionController {
 
     private final PermissionServiceInterface permissionService;
-    private final ApiResponseServiceInterface responseService;
+    private final ApiResponseService responseService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<PermissionResponseDTO>> create(@Valid @RequestBody CreatePermissionDTO dto) {

@@ -3,6 +3,7 @@ package com.sportconnect.user.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -40,5 +41,6 @@ public class UserEntity {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<RoleEntity> roles;
+    @Builder.Default
+    private Set<RoleEntity> roles = new HashSet<>();
 }

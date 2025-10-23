@@ -6,6 +6,7 @@ import com.sportconnect.authorization.role.api.dto.CreateRoleDTO;
 import com.sportconnect.authorization.role.api.dto.RoleResponseDTO;
 import com.sportconnect.authorization.role.api.dto.UpdateRoleDTO;
 import com.sportconnect.authorization.role.api.mapper.RoleDtoMapper;
+import com.sportconnect.authorization.role.application.service.impl.RoleServiceImpl;
 import com.sportconnect.authorization.role.domain.model.Role;
 import com.sportconnect.authorization.role.domain.repository.RoleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ class RoleServiceTest {
     private RoleDtoMapper mapper;
 
     @InjectMocks
-    private RoleService service;
+    private RoleServiceImpl service;
 
     private UUID roleId;
     private UUID permId1;

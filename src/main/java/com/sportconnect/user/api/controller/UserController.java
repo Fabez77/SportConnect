@@ -1,9 +1,9 @@
 package com.sportconnect.user.api.controller;
 
 import com.sportconnect.user.api.dto.*;
-import com.sportconnect.user.application.service.UserServiceInterface;
+import com.sportconnect.user.application.service.UserService;
 import com.sportconnect.shared.dto.ApiResponse;
-import com.sportconnect.shared.service.ApiResponseServiceInterface;
+import com.sportconnect.shared.service.ApiResponseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -17,8 +17,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserServiceInterface userService;
-    private final ApiResponseServiceInterface responseService;
+    private final UserService userService;
+    private final ApiResponseService responseService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(@RequestBody @Valid CreateUserDTO dto) {
@@ -51,4 +51,17 @@ public class UserController {
         userService.deleteUser(id);
         return responseService.success(HttpStatus.NO_CONTENT, "Usuario eliminado");
     }
+
+    @PostMapping("/{userId}/roles")
+    public ResponseEntity<ApiResponse<Void>> assignRoles(
+            @PathVariable UUID userId,
+            @RequestBody AssignRolesRequest request) {
+
+        userService.assignRoles(userId, request.roleIds());
+
+        return responseService.success(
+                HttpStatus.NO_CONTENT,
+                "Roles asignados correctamente");
+    }
+
 }

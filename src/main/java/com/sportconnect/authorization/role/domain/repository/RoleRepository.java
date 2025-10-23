@@ -11,4 +11,5 @@ public interface RoleRepository {
     Optional<Role> findById(UUID id);
     List<Role> findAll();
     void deleteById(UUID id);
+    List<Role> findAllById(List<UUID> ids);
 }

@@ -11,4 +11,5 @@ public interface PermissionRepository {
     Optional<Permission> findById(UUID id);
     List<Permission> findAll();
     void deleteById(UUID id);
+    List<Permission> findAllById(List<UUID> ids);
 }

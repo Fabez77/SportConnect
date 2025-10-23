@@ -41,4 +41,10 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     public void deleteById(UUID id) {
         jpaRepository.deleteById(id);
     }
+
+    @Override
+    public List<Permission> findAllById(List<UUID> ids) {
+        List<PermissionEntity> entities = jpaRepository.findAllById(ids);
+        return mapper.toDomainList(entities);
+    }
 }

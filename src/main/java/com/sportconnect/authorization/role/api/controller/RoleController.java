@@ -1,9 +1,9 @@
 package com.sportconnect.authorization.role.api.controller;
 
 import com.sportconnect.authorization.role.api.dto.*;
-import com.sportconnect.authorization.role.application.service.RoleServiceInterface;
+import com.sportconnect.authorization.role.application.service.RoleService;
 import com.sportconnect.shared.dto.ApiResponse;
-import com.sportconnect.shared.service.ApiResponseServiceInterface;
+import com.sportconnect.shared.service.ApiResponseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -17,8 +17,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RoleController {
 
-    private final RoleServiceInterface roleService;
-    private final ApiResponseServiceInterface responseService;
+    private final RoleService roleService;
+    private final ApiResponseService responseService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<RoleResponseDTO>> create(@Valid @RequestBody CreateRoleDTO dto) {
@@ -27,7 +27,8 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody UpdateRoleDTO dto) {
+    public ResponseEntity<ApiResponse<RoleResponseDTO>> update(@PathVariable UUID id,
+            @Valid @RequestBody UpdateRoleDTO dto) {
         RoleResponseDTO updated = roleService.updateRole(id, dto);
         return responseService.success(HttpStatus.OK, "Rol actualizado", updated);
     }
@@ -49,4 +50,17 @@ public class RoleController {
         roleService.deleteRole(id);
         return responseService.success(HttpStatus.NO_CONTENT, "Rol eliminado");
     }
+
+    @PostMapping("/{roleId}/permissions")
+    public ResponseEntity<ApiResponse<Void>> assignPermissions(
+            @PathVariable UUID roleId,
+            @RequestBody AssignPermissionsRequest request) {
+
+        roleService.assignPermissions(roleId, request.permissionIds());
+
+        return responseService.success(
+                HttpStatus.NO_CONTENT,
+                "Permisos asignados correctamente");
+    }
+
 }
