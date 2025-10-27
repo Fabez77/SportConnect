@@ -1,9 +1,12 @@
 package com.sportconnect.authorization.permission.api.controller;
 
 import com.sportconnect.authorization.permission.api.dto.*;
-import com.sportconnect.authorization.permission.application.service.PermissionServiceInterface;
-import com.sportconnect.shared.dto.ApiResponse;
-import com.sportconnect.shared.service.ApiResponseService;
+import com.sportconnect.authorization.permission.application.service.PermissionService;
+import com.sportconnect.shared.apiresponse.dto.ApiResponse;
+import com.sportconnect.shared.apiresponse.service.ApiResponseService;
+import com.sportconnect.shared.datatable.dto.DataTableRequest;
+import com.sportconnect.shared.datatable.dto.DataTableResponse;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -17,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PermissionController {
 
-    private final PermissionServiceInterface permissionService;
+    private final PermissionService permissionService;
     private final ApiResponseService responseService;
 
     @PostMapping
@@ -41,9 +44,10 @@ public class PermissionController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PermissionResponseDTO>>> getAll() {
-        List<PermissionResponseDTO> permissions = permissionService.getAllPermissions();
-        return responseService.success(HttpStatus.OK, "Lista de permisos", permissions);
+    public ResponseEntity<ApiResponse<DataTableResponse<PermissionResponseDTO>>> getPermissions(
+            DataTableRequest request) {
+        DataTableResponse<PermissionResponseDTO> permissions = permissionService.getPermissions(request);
+        return responseService.success(HttpStatus.OK, "Lista de permisos paginada", permissions);
     }
 
     @DeleteMapping("/{id}")

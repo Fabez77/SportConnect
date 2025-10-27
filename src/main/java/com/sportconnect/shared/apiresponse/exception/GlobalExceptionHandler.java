@@ -1,7 +1,7 @@
-package com.sportconnect.shared.exception;
+package com.sportconnect.shared.apiresponse.exception;
 
-import com.sportconnect.shared.dto.ApiResponse;
-import com.sportconnect.shared.service.ApiResponseService;
+import com.sportconnect.shared.apiresponse.dto.ApiResponse;
+import com.sportconnect.shared.apiresponse.service.ApiResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;

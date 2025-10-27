@@ -1,4 +1,4 @@
-package com.sportconnect.shared.dto;
+package com.sportconnect.shared.apiresponse.dto;
 
 import lombok.*;
 

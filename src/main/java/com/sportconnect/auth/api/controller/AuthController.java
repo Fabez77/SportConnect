@@ -1,10 +1,10 @@
 package com.sportconnect.auth.api.controller;
 
 import com.sportconnect.auth.application.service.AuthService;
+import com.sportconnect.shared.apiresponse.dto.ApiResponse;
+import com.sportconnect.shared.apiresponse.service.ApiResponseService;
 import com.sportconnect.auth.api.dto.LoginRequest;
 import com.sportconnect.auth.api.dto.LoginResponse;
-import com.sportconnect.shared.dto.ApiResponse;
-import com.sportconnect.shared.service.ApiResponseService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;

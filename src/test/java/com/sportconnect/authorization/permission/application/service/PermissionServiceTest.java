@@ -28,7 +28,7 @@ class PermissionServiceTest {
     private PermissionDtoMapper dtoMapper;
 
     @InjectMocks
-    private PermissionService service;
+    private PermissionServiceImpl service;
 
     @BeforeEach
     void setUp() {

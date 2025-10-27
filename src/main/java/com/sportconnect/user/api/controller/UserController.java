@@ -1,9 +1,10 @@
 package com.sportconnect.user.api.controller;
 
+import com.sportconnect.shared.apiresponse.dto.ApiResponse;
+import com.sportconnect.shared.apiresponse.service.ApiResponseService;
 import com.sportconnect.user.api.dto.*;
 import com.sportconnect.user.application.service.UserService;
-import com.sportconnect.shared.dto.ApiResponse;
-import com.sportconnect.shared.service.ApiResponseService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;

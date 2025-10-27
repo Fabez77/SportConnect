@@ -4,6 +4,10 @@ import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
 import com.sportconnect.authorization.permission.infrastructure.mapper.PermissionEntityMapper;
 import com.sportconnect.authorization.permission.infrastructure.persistence.entity.PermissionEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,15 +15,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class PermissionRepositoryImpl implements PermissionRepository {
 
     private final JpaPermissionRepository jpaRepository;
     private final PermissionEntityMapper mapper;
-
-    public PermissionRepositoryImpl(JpaPermissionRepository jpaRepository, PermissionEntityMapper mapper) {
-        this.jpaRepository = jpaRepository;
-        this.mapper = mapper;
-    }
 
     @Override
     public Permission save(Permission permission) {
@@ -38,13 +38,17 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
+    public Page<Permission> findAll(Specification<PermissionEntity> spec, Pageable pageable) {
+        return jpaRepository.findAll(spec, pageable).map(mapper::toDomain);
+    }
+
+    @Override
     public void deleteById(UUID id) {
         jpaRepository.deleteById(id);
     }
 
     @Override
     public List<Permission> findAllById(List<UUID> ids) {
-        List<PermissionEntity> entities = jpaRepository.findAllById(ids);
-        return mapper.toDomainList(entities);
+        return mapper.toDomainList(jpaRepository.findAllById(ids));
     }
 }

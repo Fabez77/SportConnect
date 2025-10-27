@@ -2,8 +2,8 @@ package com.sportconnect.authorization.role.api.controller;
 
 import com.sportconnect.authorization.role.api.dto.*;
 import com.sportconnect.authorization.role.application.service.RoleService;
-import com.sportconnect.shared.dto.ApiResponse;
-import com.sportconnect.shared.service.ApiResponseService;
+import com.sportconnect.shared.apiresponse.dto.ApiResponse;
+import com.sportconnect.shared.apiresponse.service.ApiResponseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;

@@ -1,6 +1,6 @@
-package com.sportconnect.shared.service;
+package com.sportconnect.shared.apiresponse.service;
 
-import com.sportconnect.shared.dto.ApiResponse;
+import com.sportconnect.shared.apiresponse.dto.ApiResponse;
 import org.springframework.http.*;
 
 public interface ApiResponseService {
