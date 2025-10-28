@@ -5,7 +5,6 @@ import com.sportconnect.authorization.permission.api.mapper.PermissionDtoMapper;
 import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
 import com.sportconnect.authorization.permission.infrastructure.persistence.entity.PermissionEntity;
-import com.sportconnect.authorization.permission.infrastructure.persistence.repository.PermissionRepositoryImpl;
 import com.sportconnect.shared.datatable.dto.DataTableRequest;
 import com.sportconnect.shared.datatable.dto.DataTableResponse;
 import com.sportconnect.shared.datatable.filter.SpecificationBuilder;
@@ -44,23 +43,19 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public DataTableResponse<PermissionResponseDTO> getPermissions(DataTableRequest request) {
-        // 1. Construir Pageable a partir del request
         Pageable pageable = dataTableService.buildPageable(request);
 
-        // 2. Construir Specification dinámico (global + individuales)
         SpecificationBuilder<PermissionEntity> builder = new SpecificationBuilder<>();
         Specification<PermissionEntity> spec = builder.build(
                 request.getFilters(),
-                java.util.List.of("name", "description") // campos para búsqueda global
-        );
+                request.getSearch(),
+                List.of("name", "description"));
 
-        // 3. Ejecutar query en repositorio (infraestructura)
-        Page<Permission> page = ((PermissionRepositoryImpl) repository).findAll(spec, pageable);
+        // ✅ sin cast
+        Page<Permission> page = repository.findAll(spec, pageable);
 
-        // 4. Mapear entidades de dominio a DTOs
         Page<PermissionResponseDTO> dtoPage = page.map(mapper::toResponse);
 
-        // 5. Construir respuesta estándar de DataTable
         return dataTableService.buildResponse(dtoPage);
     }
 

@@ -1,16 +1,10 @@
 package com.sportconnect.shared.datatable.service;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.sportconnect.shared.datatable.dto.DataTableRequest;
 import com.sportconnect.shared.datatable.dto.DataTableResponse;
-import com.sportconnect.shared.datatable.filter.SpecificationBuilder;
-
 @Service
 public class DataTableServiceImpl implements DataTableService {
 

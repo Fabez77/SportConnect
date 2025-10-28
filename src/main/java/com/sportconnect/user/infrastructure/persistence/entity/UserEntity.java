@@ -30,7 +30,7 @@ public class UserEntity {
     @Column(nullable = false)
     private String password; // ✅ Campo agregado para almacenar el hash
 
-    private boolean ative;
+    private boolean active;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

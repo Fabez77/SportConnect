@@ -4,12 +4,14 @@ import com.sportconnect.authorization.role.api.dto.*;
 import com.sportconnect.authorization.role.application.service.RoleService;
 import com.sportconnect.shared.apiresponse.dto.ApiResponse;
 import com.sportconnect.shared.apiresponse.service.ApiResponseService;
+import com.sportconnect.shared.datatable.dto.DataTableRequest;
+import com.sportconnect.shared.datatable.dto.DataTableResponse;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,7 +29,8 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<RoleResponseDTO>> update(@PathVariable UUID id,
+    public ResponseEntity<ApiResponse<RoleResponseDTO>> update(
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateRoleDTO dto) {
         RoleResponseDTO updated = roleService.updateRole(id, dto);
         return responseService.success(HttpStatus.OK, "Rol actualizado", updated);
@@ -40,9 +43,9 @@ public class RoleController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<RoleResponseDTO>>> getAll() {
-        List<RoleResponseDTO> roles = roleService.getAllRoles();
-        return responseService.success(HttpStatus.OK, "Lista de roles", roles);
+    public ResponseEntity<ApiResponse<DataTableResponse<RoleResponseDTO>>> getRoles(DataTableRequest request) {
+        DataTableResponse<RoleResponseDTO> roles = roleService.getRoles(request);
+        return responseService.success(HttpStatus.OK, "Lista de roles paginada", roles);
     }
 
     @DeleteMapping("/{id}")
@@ -62,5 +65,4 @@ public class RoleController {
                 HttpStatus.NO_CONTENT,
                 "Permisos asignados correctamente");
     }
-
 }

@@ -16,5 +16,6 @@ public class DataTableRequest {
     private int size;              // tamaño de página
     private String sortBy;         // campo a ordenar
     private String direction;      // ASC o DESC
+    private String search;
     private Map<String, String> filters; // filtros dinámicos opcionales
 }

@@ -2,7 +2,6 @@ package com.sportconnect.user.application.service;
 
 import com.sportconnect.authorization.role.domain.model.Role;
 import com.sportconnect.authorization.role.domain.repository.RoleRepository;
-import com.sportconnect.authorization.role.infrastructure.persistence.entity.RoleEntity;
 import com.sportconnect.user.api.dto.*;
 import com.sportconnect.user.api.mapper.UserDtoMapper;
 import com.sportconnect.user.domain.model.User;

@@ -1,43 +1,41 @@
 package com.sportconnect.authorization.role.application.service.impl;
 
-import org.springframework.stereotype.Service;
-
-import com.sportconnect.authorization.role.api.dto.CreateRoleDTO;
-import com.sportconnect.authorization.role.api.dto.RoleResponseDTO;
-import com.sportconnect.authorization.role.api.dto.UpdateRoleDTO;
+import com.sportconnect.authorization.role.api.dto.*;
 import com.sportconnect.authorization.role.api.mapper.RoleDtoMapper;
 import com.sportconnect.authorization.role.application.service.RoleService;
 import com.sportconnect.authorization.role.domain.model.Role;
 import com.sportconnect.authorization.role.domain.repository.RoleRepository;
+import com.sportconnect.authorization.role.infrastructure.persistence.entity.RoleEntity;
 import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
+import com.sportconnect.shared.datatable.dto.DataTableRequest;
+import com.sportconnect.shared.datatable.dto.DataTableResponse;
+import com.sportconnect.shared.datatable.filter.SpecificationBuilder;
+import com.sportconnect.shared.datatable.service.DataTableService;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository repository;
     private final PermissionRepository permissionRepository;
     private final RoleDtoMapper mapper;
-
-    public RoleServiceImpl(RoleRepository repository,
-            PermissionRepository permissionRepository,
-            RoleDtoMapper mapper) {
-        this.repository = repository;
-        this.permissionRepository = permissionRepository;
-        this.mapper = mapper;
-    }
+    private final DataTableService dataTableService;
 
     @Override
     public RoleResponseDTO createRole(CreateRoleDTO dto) {
         Role role = mapper.toDomain(dto);
 
-        // Resolver permisos reales desde la BD
+        // Resolver permisos desde la BD
         Set<Permission> permissions = dto.getPermissions().stream()
                 .map(id -> permissionRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Permiso no encontrado: " + id)))
@@ -45,8 +43,7 @@ public class RoleServiceImpl implements RoleService {
 
         role.setPermissions(permissions);
 
-        Role saved = repository.save(role);
-        return mapper.toResponse(saved);
+        return mapper.toResponse(repository.save(role));
     }
 
     @Override
@@ -56,7 +53,6 @@ public class RoleServiceImpl implements RoleService {
 
         mapper.updateDomain(dto, role);
 
-        // Resolver permisos reales desde la BD (si vienen en el DTO)
         if (dto.getPermissions() != null) {
             Set<Permission> permissions = dto.getPermissions().stream()
                     .map(pid -> permissionRepository.findById(pid)
@@ -65,15 +61,24 @@ public class RoleServiceImpl implements RoleService {
             role.setPermissions(permissions);
         }
 
-        Role updated = repository.save(role);
-        return mapper.toResponse(updated);
+        return mapper.toResponse(repository.save(role));
     }
 
     @Override
-    public List<RoleResponseDTO> getAllRoles() {
-        return repository.findAll().stream()
-                .map(mapper::toResponse)
-                .toList();
+    public DataTableResponse<RoleResponseDTO> getRoles(DataTableRequest request) {
+        Pageable pageable = dataTableService.buildPageable(request);
+
+        SpecificationBuilder<RoleEntity> builder = new SpecificationBuilder<>();
+        Specification<RoleEntity> spec = builder.build(
+                request.getFilters(),
+                request.getSearch(),
+                List.of("name", "description") // campos filtrables
+        );
+
+        Page<Role> page = repository.findAll(spec, pageable);
+        Page<RoleResponseDTO> dtoPage = page.map(mapper::toResponse);
+
+        return dataTableService.buildResponse(dtoPage);
     }
 
     @Override
@@ -102,5 +107,5 @@ public class RoleServiceImpl implements RoleService {
         role.setPermissions(new HashSet<>(permissions));
         repository.save(role);
     }
-
 }
+
