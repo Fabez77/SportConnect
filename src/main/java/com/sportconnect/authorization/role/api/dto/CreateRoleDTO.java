@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.util.Set;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -21,5 +19,5 @@ public class CreateRoleDTO {
     private String description;
 
     // Opcional: asignar permisos al crear
-    private Set<UUID> permissions;
+    // private Set<UUID> permissions;
 }

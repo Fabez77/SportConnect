@@ -34,15 +34,6 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleResponseDTO createRole(CreateRoleDTO dto) {
         Role role = mapper.toDomain(dto);
-
-        // Resolver permisos desde la BD
-        Set<Permission> permissions = dto.getPermissions().stream()
-                .map(id -> permissionRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Permiso no encontrado: " + id)))
-                .collect(Collectors.toSet());
-
-        role.setPermissions(permissions);
-
         return mapper.toResponse(repository.save(role));
     }
 
@@ -52,14 +43,6 @@ public class RoleServiceImpl implements RoleService {
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
         mapper.updateDomain(dto, role);
-
-        if (dto.getPermissions() != null) {
-            Set<Permission> permissions = dto.getPermissions().stream()
-                    .map(pid -> permissionRepository.findById(pid)
-                            .orElseThrow(() -> new RuntimeException("Permiso no encontrado: " + pid)))
-                    .collect(Collectors.toSet());
-            role.setPermissions(permissions);
-        }
 
         return mapper.toResponse(repository.save(role));
     }
@@ -108,4 +91,3 @@ public class RoleServiceImpl implements RoleService {
         repository.save(role);
     }
 }
-

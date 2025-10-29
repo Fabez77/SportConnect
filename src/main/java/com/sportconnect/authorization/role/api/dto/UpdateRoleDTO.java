@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.util.Set;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -20,6 +18,6 @@ public class UpdateRoleDTO {
     @Size(max = 200, message = "La descripción no puede superar los 200 caracteres")
     private String description;
 
-    private Set<UUID> permissions;
+    // private Set<UUID> permissions;
 }
 

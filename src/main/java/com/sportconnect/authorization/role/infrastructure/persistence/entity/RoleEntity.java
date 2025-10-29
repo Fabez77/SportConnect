@@ -3,6 +3,7 @@ package com.sportconnect.authorization.role.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,11 +27,12 @@ public class RoleEntity {
     @Column(length = 200)
     private String description;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "roles_permissions",
         joinColumns = @JoinColumn(name = "role_id"),
         inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
-    private Set<PermissionEntity> permissions;
+    @Builder.Default
+    private Set<PermissionEntity> permissions = new HashSet<>();
 }
