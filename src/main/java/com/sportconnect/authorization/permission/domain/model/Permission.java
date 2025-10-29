@@ -12,4 +12,5 @@ public class Permission {
     private UUID id;
     private String name;        // ej: "CREATE_USER"
     private String description; // opcional
+    private String category;
 }

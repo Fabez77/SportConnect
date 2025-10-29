@@ -12,4 +12,5 @@ public class PermissionResponseDTO {
     private UUID id;
     private String name;
     private String description;
+    private String category;
 }
