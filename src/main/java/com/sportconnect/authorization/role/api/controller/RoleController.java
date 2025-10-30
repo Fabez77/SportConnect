@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -54,7 +55,13 @@ public class RoleController {
         return responseService.success(HttpStatus.NO_CONTENT, "Rol eliminado");
     }
 
-    @PostMapping("/{roleId}/permissions")
+    @GetMapping("/{id}/permissions")
+    public ResponseEntity<ApiResponse<RolePermissionsResponse>> getRolePermissions(@PathVariable UUID id) {
+        RolePermissionsResponse response = roleService.getRolePermissionIds(id);
+        return responseService.success(HttpStatus.OK, "Lista de permisos", response);
+    }
+
+    @PutMapping("/{roleId}/permissions")
     public ResponseEntity<ApiResponse<Void>> assignPermissions(
             @PathVariable UUID roleId,
             @RequestBody AssignPermissionsRequest request) {

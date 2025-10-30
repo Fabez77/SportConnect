@@ -1,5 +1,6 @@
 package com.sportconnect.user.api.controller;
 
+import com.sportconnect.authorization.role.api.dto.RolePermissionsResponse;
 import com.sportconnect.shared.apiresponse.dto.ApiResponse;
 import com.sportconnect.shared.apiresponse.service.ApiResponseService;
 import com.sportconnect.user.api.dto.*;
@@ -53,7 +54,13 @@ public class UserController {
         return responseService.success(HttpStatus.NO_CONTENT, "Usuario eliminado");
     }
 
-    @PostMapping("/{userId}/roles")
+    @GetMapping("/{id}/roles")
+    public ResponseEntity<ApiResponse<UserRoleResponse>> getUserRoles(@PathVariable UUID id) {
+        UserRoleResponse response = userService.getUserRolesIds(id);
+        return responseService.success(HttpStatus.OK, "Lista de roles", response);
+    }
+
+    @PutMapping("/{userId}/roles")
     public ResponseEntity<ApiResponse<Void>> assignRoles(
             @PathVariable UUID userId,
             @RequestBody AssignRolesRequest request) {

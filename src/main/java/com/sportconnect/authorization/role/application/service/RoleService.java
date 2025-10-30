@@ -20,4 +20,6 @@ public interface RoleService {
     void deleteRole(UUID id);
 
     void assignPermissions(UUID roleId, List<UUID> permissionIds);
+
+    RolePermissionsResponse getRolePermissionIds(UUID roleId);
 }

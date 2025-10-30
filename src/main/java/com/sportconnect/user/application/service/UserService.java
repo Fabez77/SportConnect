@@ -12,5 +12,6 @@ public interface UserService {
     List<UserResponseDTO> listUsers();
     void deleteUser(UUID id);
     void assignRoles(UUID userId, List<UUID> roleIds);
+    UserRoleResponse getUserRolesIds(UUID userId);
 
 }

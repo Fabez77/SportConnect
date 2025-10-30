@@ -14,6 +14,8 @@ import com.sportconnect.shared.datatable.filter.SpecificationBuilder;
 import com.sportconnect.shared.datatable.service.DataTableService;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -90,4 +92,18 @@ public class RoleServiceImpl implements RoleService {
         role.setPermissions(new HashSet<>(permissions));
         repository.save(role);
     }
+
+    @Override
+    public RolePermissionsResponse getRolePermissionIds(UUID roleId) {
+        Role role = repository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
+        Set<UUID> permissionIds = role.getPermissions()
+                .stream()
+                .map(Permission::getId)
+                .collect(Collectors.toSet());
+
+        return new RolePermissionsResponse(permissionIds);
+    }
+
 }

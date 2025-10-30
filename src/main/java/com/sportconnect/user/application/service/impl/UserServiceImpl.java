@@ -1,9 +1,12 @@
-package com.sportconnect.user.application.service;
+package com.sportconnect.user.application.service.impl;
 
+import com.sportconnect.authorization.permission.domain.model.Permission;
+import com.sportconnect.authorization.role.api.dto.RolePermissionsResponse;
 import com.sportconnect.authorization.role.domain.model.Role;
 import com.sportconnect.authorization.role.domain.repository.RoleRepository;
 import com.sportconnect.user.api.dto.*;
 import com.sportconnect.user.api.mapper.UserDtoMapper;
+import com.sportconnect.user.application.service.UserService;
 import com.sportconnect.user.domain.model.User;
 import com.sportconnect.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +17,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -116,6 +121,19 @@ public class UserServiceImpl implements UserService {
 
         user.setRoles(new HashSet<>(roles));
         userRepository.save(user);
+    }
+
+    @Override
+    public UserRoleResponse getUserRolesIds(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
+        Set<UUID> roleIds = user.getRoles()
+                .stream()
+                .map(Role::getId)
+                .collect(Collectors.toSet());
+
+        return new UserRoleResponse(roleIds);
     }
 
 }

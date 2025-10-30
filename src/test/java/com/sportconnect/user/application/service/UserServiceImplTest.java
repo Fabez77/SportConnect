@@ -4,6 +4,7 @@ import com.sportconnect.authorization.role.domain.model.Role;
 import com.sportconnect.authorization.role.domain.repository.RoleRepository;
 import com.sportconnect.user.api.dto.*;
 import com.sportconnect.user.api.mapper.UserDtoMapper;
+import com.sportconnect.user.application.service.impl.UserServiceImpl;
 import com.sportconnect.user.domain.model.User;
 import com.sportconnect.user.domain.repository.UserRepository;
 import org.junit.jupiter.api.Test;
