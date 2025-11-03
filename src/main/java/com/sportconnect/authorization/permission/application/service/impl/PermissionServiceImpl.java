@@ -1,7 +1,8 @@
-package com.sportconnect.authorization.permission.application.service;
+package com.sportconnect.authorization.permission.application.service.impl;
 
 import com.sportconnect.authorization.permission.api.dto.*;
 import com.sportconnect.authorization.permission.api.mapper.PermissionDtoMapper;
+import com.sportconnect.authorization.permission.application.service.PermissionService;
 import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
 import com.sportconnect.authorization.permission.infrastructure.persistence.entity.PermissionEntity;

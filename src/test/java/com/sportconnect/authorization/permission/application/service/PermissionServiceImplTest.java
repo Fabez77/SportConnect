@@ -2,6 +2,7 @@ package com.sportconnect.authorization.permission.application.service;
 
 import com.sportconnect.authorization.permission.api.dto.*;
 import com.sportconnect.authorization.permission.api.mapper.PermissionDtoMapper;
+import com.sportconnect.authorization.permission.application.service.impl.PermissionServiceImpl;
 import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
 import com.sportconnect.shared.datatable.dto.DataTableRequest;
