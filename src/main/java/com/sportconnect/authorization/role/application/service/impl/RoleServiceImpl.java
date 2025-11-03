@@ -5,20 +5,16 @@ import com.sportconnect.authorization.role.api.mapper.RoleDtoMapper;
 import com.sportconnect.authorization.role.application.service.RoleService;
 import com.sportconnect.authorization.role.domain.model.Role;
 import com.sportconnect.authorization.role.domain.repository.RoleRepository;
-import com.sportconnect.authorization.role.infrastructure.persistence.entity.RoleEntity;
 import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
 import com.sportconnect.shared.datatable.dto.DataTableRequest;
 import com.sportconnect.shared.datatable.dto.DataTableResponse;
-import com.sportconnect.shared.datatable.filter.SpecificationBuilder;
 import com.sportconnect.shared.datatable.service.DataTableService;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -53,16 +49,13 @@ public class RoleServiceImpl implements RoleService {
     public DataTableResponse<RoleResponseDTO> getRoles(DataTableRequest request) {
         Pageable pageable = dataTableService.buildPageable(request);
 
-        SpecificationBuilder<RoleEntity> builder = new SpecificationBuilder<>();
-        Specification<RoleEntity> spec = builder.build(
+        // El servicio NO construye Specification, solo pasa filtros y search
+        Page<Role> page = repository.findAll(
                 request.getFilters(),
                 request.getSearch(),
-                List.of("name", "description") // campos filtrables
-        );
+                pageable);
 
-        Page<Role> page = repository.findAll(spec, pageable);
         Page<RoleResponseDTO> dtoPage = page.map(mapper::toResponse);
-
         return dataTableService.buildResponse(dtoPage);
     }
 

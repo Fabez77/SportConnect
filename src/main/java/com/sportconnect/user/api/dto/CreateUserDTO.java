@@ -22,7 +22,7 @@ public class CreateUserDTO {
     private String dni;
 
     @NotBlank
-    @Size(min = 8, max = 100) // puedes ajustar el máximo si usas reglas más estrictas
+    @Size(min = 6, max = 100) // puedes ajustar el máximo si usas reglas más estrictas
     private String password;
 }
 

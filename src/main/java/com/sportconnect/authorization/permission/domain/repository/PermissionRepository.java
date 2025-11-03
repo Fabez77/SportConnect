@@ -1,13 +1,12 @@
 package com.sportconnect.authorization.permission.domain.repository;
 
 import com.sportconnect.authorization.permission.domain.model.Permission;
-import com.sportconnect.authorization.permission.infrastructure.persistence.entity.PermissionEntity;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,7 +17,7 @@ public interface PermissionRepository {
 
     List<Permission> findAll();
 
-    Page<Permission> findAll(Specification<PermissionEntity> spec, Pageable pageable); // 👈 nuevo
+    Page<Permission> findAll(Map<String, String> filters, String search, Pageable pageable);
 
     void deleteById(UUID id);
 

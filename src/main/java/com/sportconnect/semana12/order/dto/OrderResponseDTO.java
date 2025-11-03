@@ -16,6 +16,7 @@ public class OrderResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ItemDTO {
+        private Long id;
         private String product;
         private int quantity;
     }

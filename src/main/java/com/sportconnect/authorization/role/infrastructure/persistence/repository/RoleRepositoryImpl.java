@@ -4,12 +4,14 @@ import com.sportconnect.authorization.role.domain.model.Role;
 import com.sportconnect.authorization.role.domain.repository.RoleRepository;
 import com.sportconnect.authorization.role.infrastructure.mapper.RoleEntityMapper;
 import com.sportconnect.authorization.role.infrastructure.persistence.entity.RoleEntity;
+import com.sportconnect.shared.datatable.filter.SpecificationBuilder;
 
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,7 +43,10 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public Page<Role> findAll(Specification<RoleEntity> spec, Pageable pageable) {
+    public Page<Role> findAll(Map<String, String> filters, String search, Pageable pageable) {
+        SpecificationBuilder<RoleEntity> builder = new SpecificationBuilder<>();
+        Specification<RoleEntity> spec = builder.build(filters, search, List.of("name", "description"));
+
         Page<RoleEntity> page = jpaRepository.findAll(spec, pageable);
         return page.map(mapper::toDomain);
     }

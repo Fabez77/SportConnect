@@ -4,6 +4,8 @@ import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
 import com.sportconnect.authorization.permission.infrastructure.mapper.PermissionEntityMapper;
 import com.sportconnect.authorization.permission.infrastructure.persistence.entity.PermissionEntity;
+import com.sportconnect.shared.datatable.filter.SpecificationBuilder;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,8 +41,12 @@ public class PermissionRepositoryImpl implements PermissionRepository {
     }
 
     @Override
-    public Page<Permission> findAll(Specification<PermissionEntity> spec, Pageable pageable) {
-        return jpaRepository.findAll(spec, pageable).map(mapper::toDomain);
+    public Page<Permission> findAll(Map<String, String> filters, String search, Pageable pageable) {
+        SpecificationBuilder<PermissionEntity> builder = new SpecificationBuilder<>();
+        Specification<PermissionEntity> spec = builder.build(filters, search, List.of("name", "description"));
+
+        Page<PermissionEntity> page = jpaRepository.findAll(spec, pageable);
+        return page.map(mapper::toDomain);
     }
 
     @Override

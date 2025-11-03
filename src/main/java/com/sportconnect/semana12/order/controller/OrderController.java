@@ -1,38 +1,58 @@
 package com.sportconnect.semana12.order.controller;
 
-import org.hibernate.mapping.List;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import com.sportconnect.semana12.order.dto.*;
-import com.sportconnect.semana12.order.exception.InvalidOrderException;
+import com.sportconnect.semana12.order.dto.OrderRequestDTO;
+import com.sportconnect.semana12.order.dto.OrderResponseDTO;
 import com.sportconnect.semana12.order.service.OrderService;
 import com.sportconnect.shared.apiresponse.dto.ApiResponse;
+import com.sportconnect.shared.apiresponse.service.ApiResponseService;
+import com.sportconnect.shared.datatable.dto.DataTableRequest;
+import com.sportconnect.shared.datatable.dto.DataTableResponse;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderService service;
+    private final OrderService orderService;
+    private final ApiResponseService responseService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> create(@RequestBody OrderRequestDTO dto) {
-        try {
-            service.createOrder(dto);
-            return ResponseEntity.ok(new ApiResponse<>(true, "Pedido creado", null));
-        } catch (InvalidOrderException e) {
-            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
-        }
+    public ResponseEntity<ApiResponse<OrderResponseDTO>> create(@Valid @RequestBody OrderRequestDTO dto) {
+        OrderResponseDTO order = orderService.createOrder(dto); // 👈 transaccional en el service
+        return responseService.success(HttpStatus.CREATED, "Pedido creado", order);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<OrderResponseDTO>> update(
+            @PathVariable Long id,
+            @Valid @RequestBody OrderRequestDTO dto) {
+        OrderResponseDTO updated = orderService.updateOrder(id, dto); // 👈 transaccional en el service
+        return responseService.success(HttpStatus.OK, "Pedido actualizado", updated);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<OrderResponseDTO>> getById(@PathVariable Long id) {
+        OrderResponseDTO order = orderService.getOrderById(id);
+        return responseService.success(HttpStatus.OK, "Pedido encontrado", order);
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OrderResponseDTO>>> listAll() {
-        List<OrderResponseDTO> orders = service.getAllOrders();
-        return ResponseEntity.ok(new ApiResponse<>(true, "Listado de pedidos", orders));
+    public ResponseEntity<ApiResponse<DataTableResponse<OrderResponseDTO>>> getOrders(DataTableRequest request) {
+        DataTableResponse<OrderResponseDTO> orders = orderService.getOrders(request); // 👈 listado paginado
+        return responseService.success(HttpStatus.OK, "Lista de pedidos paginada", orders);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+        // Opción 1: semánticamente correcto (204 sin body)
+        return responseService.success(HttpStatus.NO_CONTENT, null);
+        // Opción 2: consistente con permisos (200 con mensaje)
+        // return responseService.success(HttpStatus.OK, "Pedido eliminado");
     }
 }
-
-

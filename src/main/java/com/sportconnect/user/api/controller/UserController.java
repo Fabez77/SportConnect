@@ -1,8 +1,8 @@
 package com.sportconnect.user.api.controller;
 
-import com.sportconnect.authorization.role.api.dto.RolePermissionsResponse;
 import com.sportconnect.shared.apiresponse.dto.ApiResponse;
 import com.sportconnect.shared.apiresponse.service.ApiResponseService;
+import com.sportconnect.shared.datatable.dto.*;
 import com.sportconnect.user.api.dto.*;
 import com.sportconnect.user.application.service.UserService;
 
@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,33 +22,33 @@ public class UserController {
     private final ApiResponseService responseService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(@RequestBody @Valid CreateUserDTO dto) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> create(@Valid @RequestBody CreateUserDTO dto) {
         UserResponseDTO user = userService.createUser(dto);
         return responseService.success(HttpStatus.CREATED, "Usuario creado", user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(
+    public ResponseEntity<ApiResponse<UserResponseDTO>> update(
             @PathVariable UUID id,
-            @RequestBody @Valid UpdateUserDTO dto) {
+            @Valid @RequestBody UpdateUserDTO dto) {
         UserResponseDTO updated = userService.updateUser(id, dto);
         return responseService.success(HttpStatus.OK, "Usuario actualizado", updated);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getById(@PathVariable UUID id) {
         UserResponseDTO user = userService.getUserById(id);
         return responseService.success(HttpStatus.OK, "Usuario encontrado", user);
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> listUsers() {
-        List<UserResponseDTO> users = userService.listUsers();
-        return responseService.success(HttpStatus.OK, "Lista de usuarios", users);
+    public ResponseEntity<ApiResponse<DataTableResponse<UserResponseDTO>>> getUsers(DataTableRequest request) {
+        DataTableResponse<UserResponseDTO> users = userService.getUsers(request);
+        return responseService.success(HttpStatus.OK, "Lista de usuarios paginada", users);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         userService.deleteUser(id);
         return responseService.success(HttpStatus.NO_CONTENT, "Usuario eliminado");
     }
@@ -71,5 +70,4 @@ public class UserController {
                 HttpStatus.NO_CONTENT,
                 "Roles asignados correctamente");
     }
-
 }

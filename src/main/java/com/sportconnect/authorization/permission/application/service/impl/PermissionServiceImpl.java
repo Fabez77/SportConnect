@@ -5,19 +5,15 @@ import com.sportconnect.authorization.permission.api.mapper.PermissionDtoMapper;
 import com.sportconnect.authorization.permission.application.service.PermissionService;
 import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
-import com.sportconnect.authorization.permission.infrastructure.persistence.entity.PermissionEntity;
 import com.sportconnect.shared.datatable.dto.DataTableRequest;
 import com.sportconnect.shared.datatable.dto.DataTableResponse;
-import com.sportconnect.shared.datatable.filter.SpecificationBuilder;
 import com.sportconnect.shared.datatable.service.DataTableService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -46,17 +42,13 @@ public class PermissionServiceImpl implements PermissionService {
     public DataTableResponse<PermissionResponseDTO> getPermissions(DataTableRequest request) {
         Pageable pageable = dataTableService.buildPageable(request);
 
-        SpecificationBuilder<PermissionEntity> builder = new SpecificationBuilder<>();
-        Specification<PermissionEntity> spec = builder.build(
+        // El servicio NO construye Specification, solo pasa filtros y search
+        Page<Permission> page = repository.findAll(
                 request.getFilters(),
                 request.getSearch(),
-                List.of("name", "description"));
-
-        // ✅ sin cast
-        Page<Permission> page = repository.findAll(spec, pageable);
+                pageable);
 
         Page<PermissionResponseDTO> dtoPage = page.map(mapper::toResponse);
-
         return dataTableService.buildResponse(dtoPage);
     }
 
