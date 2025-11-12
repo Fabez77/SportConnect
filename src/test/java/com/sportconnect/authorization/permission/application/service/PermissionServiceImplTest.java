@@ -10,12 +10,16 @@ import com.sportconnect.shared.datatable.dto.DataTableResponse;
 import com.sportconnect.shared.datatable.service.DataTableService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.*;
 
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class PermissionServiceImplTest {
@@ -24,7 +28,7 @@ class PermissionServiceImplTest {
     private PermissionRepository repository;
 
     @Mock
-    private PermissionDtoMapper dtoMapper;
+    private PermissionDtoMapper mapper;
 
     @Mock
     private DataTableService dataTableService;
@@ -32,94 +36,148 @@ class PermissionServiceImplTest {
     @InjectMocks
     private PermissionServiceImpl service;
 
+    private Permission permission;
+    private PermissionResponseDTO responseDTO;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        permission = Permission.builder()
+                .id(UUID.randomUUID())
+                .name("READ_USER")
+                .description("Permite leer usuarios")
+                .category("USER_MANAGEMENT")
+                .build();
+
+        responseDTO = PermissionResponseDTO.builder()
+                .id(permission.getId())
+                .name(permission.getName())
+                .description(permission.getDescription())
+                .category(permission.getCategory())
+                .build();
     }
 
     @Test
-    void createPermission_shouldReturnResponseDTO() {
-        CreatePermissionDTO dto = new CreatePermissionDTO("CREATE_USER", "Permite crear usuarios");
-        Permission domain = new Permission(UUID.randomUUID(), "CREATE_USER", "Permite crear usuarios");
-        PermissionResponseDTO response = new PermissionResponseDTO(domain.getId(), domain.getName(), domain.getDescription());
+    void testCreatePermission() {
+        CreatePermissionDTO dto = CreatePermissionDTO.builder()
+                .name("READ_USER")
+                .description("Permite leer usuarios")
+                .category("USER_MANAGEMENT")
+                .build();
 
-        when(dtoMapper.toDomain(dto)).thenReturn(domain);
-        when(repository.save(domain)).thenReturn(domain);
-        when(dtoMapper.toResponse(domain)).thenReturn(response);
+        when(mapper.toDomain(dto)).thenReturn(permission);
+        when(repository.save(permission)).thenReturn(permission);
+        when(mapper.toResponse(permission)).thenReturn(responseDTO);
 
         PermissionResponseDTO result = service.createPermission(dto);
 
-        assertThat(result.getName()).isEqualTo("CREATE_USER");
-        verify(repository).save(domain);
+        assertEquals("READ_USER", result.getName());
+        assertEquals("USER_MANAGEMENT", result.getCategory());
+        verify(mapper).toDomain(dto);
+        verify(mapper).toResponse(permission);
+        verify(repository).save(permission);
     }
 
     @Test
-    void updatePermission_shouldUpdateAndReturnResponseDTO() {
-        UUID id = UUID.randomUUID();
-        UpdatePermissionDTO dto = new UpdatePermissionDTO("DELETE_USER", "Permite eliminar usuarios");
-        Permission existing = new Permission(id, "CREATE_USER", "Permite crear usuarios");
-        PermissionResponseDTO response = new PermissionResponseDTO(id, "DELETE_USER", "Permite eliminar usuarios");
+    void testUpdatePermission() {
+        UUID id = permission.getId();
+        UpdatePermissionDTO dto = UpdatePermissionDTO.builder()
+                .name("WRITE_USER")
+                .description("Permite escribir usuarios")
+                .category("USER_MANAGEMENT")
+                .build();
 
-        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        when(repository.findById(id)).thenReturn(Optional.of(permission));
+
         doAnswer(invocation -> {
-            existing.setName(dto.getName());
-            existing.setDescription(dto.getDescription());
+            UpdatePermissionDTO d = invocation.getArgument(0);
+            Permission p = invocation.getArgument(1);
+            p.setName(d.getName());
+            p.setDescription(d.getDescription());
+            p.setCategory(d.getCategory());
             return null;
-        }).when(dtoMapper).updateDomain(dto, existing);
-        when(repository.save(existing)).thenReturn(existing);
-        when(dtoMapper.toResponse(existing)).thenReturn(response);
+        }).when(mapper).updateDomain(dto, permission);
+
+        when(repository.save(permission)).thenReturn(permission);
+
+        when(mapper.toResponse(permission)).thenReturn(
+                PermissionResponseDTO.builder()
+                        .id(id)
+                        .name(dto.getName())
+                        .description(dto.getDescription())
+                        .category(dto.getCategory())
+                        .build()
+        );
 
         PermissionResponseDTO result = service.updatePermission(id, dto);
 
-        assertThat(result.getName()).isEqualTo("DELETE_USER");
-        verify(repository).save(existing);
+        assertEquals("WRITE_USER", result.getName());
+        assertEquals("USER_MANAGEMENT", result.getCategory());
+        verify(mapper).updateDomain(dto, permission);
+        verify(mapper).toResponse(permission);
+        verify(repository).save(permission);
     }
 
     @Test
-    void getPermissions_shouldReturnDataTableResponse() {
-        DataTableRequest request = new DataTableRequest();
-        Pageable pageable = PageRequest.of(0, 10);
-        Permission domain = new Permission(UUID.randomUUID(), "VIEW_USER", "Permite ver usuarios");
-        PermissionResponseDTO dto = new PermissionResponseDTO(domain.getId(), domain.getName(), domain.getDescription());
+    void testGetPermissions() {
+        Map<String, String> filters = Map.of("category", "USER_MANAGEMENT");
 
-        Page<Permission> page = new PageImpl<>(List.of(domain), pageable, 1);
-        Page<PermissionResponseDTO> dtoPage = new PageImpl<>(List.of(dto), pageable, 1);
+        DataTableRequest request = DataTableRequest.builder()
+                .page(0).size(10).sortBy("name").direction("ASC")
+                .search("READ").filters(filters).build();
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+        Page<Permission> page = new PageImpl<>(List.of(permission), pageable, 1);
+
+        when(dataTableService.buildPageable(request)).thenReturn(pageable);
+        when(repository.findAll(filters, "READ", pageable)).thenReturn(page);
+        when(mapper.toResponse(permission)).thenReturn(responseDTO);
+
         DataTableResponse<PermissionResponseDTO> expectedResponse = DataTableResponse.<PermissionResponseDTO>builder()
-                .data(List.of(dto))
-                .totalElements(1L)
+                .data(List.of(responseDTO))
+                .totalElements(1)
                 .totalPages(1)
                 .currentPage(0)
                 .build();
 
-        when(dataTableService.buildPageable(request)).thenReturn(pageable);
-        // simulamos que el repo devuelve un Page<Permission>
-        when(((PermissionRepository) repository).findAll(any(), eq(pageable))).thenReturn(page);
-        when(dtoMapper.toResponse(domain)).thenReturn(dto);
-        when(dataTableService.buildResponse(dtoPage)).thenReturn(expectedResponse);
+        when(dataTableService.buildResponse(ArgumentMatchers.<Page<PermissionResponseDTO>>any()))
+        .thenReturn(expectedResponse);
+
+
 
         DataTableResponse<PermissionResponseDTO> result = service.getPermissions(request);
 
-        assertThat(result).isEqualTo(expectedResponse);
-        verify(repository).findAll(any(), eq(pageable));
+        assertEquals(1, result.getData().size());
+        assertEquals("READ_USER", result.getData().get(0).getName());
+        assertEquals("USER_MANAGEMENT", result.getData().get(0).getCategory());
+        verify(mapper).toResponse(permission);
     }
 
     @Test
-    void getPermissionById_shouldReturnResponseDTO() {
-        UUID id = UUID.randomUUID();
-        Permission domain = new Permission(id, "VIEW_USER", "Permite ver usuarios");
-        PermissionResponseDTO dto = new PermissionResponseDTO(id, "VIEW_USER", "Permite ver usuarios");
-
-        when(repository.findById(id)).thenReturn(Optional.of(domain));
-        when(dtoMapper.toResponse(domain)).thenReturn(dto);
+    void testGetPermissionById_found() {
+        UUID id = permission.getId();
+        when(repository.findById(id)).thenReturn(Optional.of(permission));
+        when(mapper.toResponse(permission)).thenReturn(responseDTO);
 
         PermissionResponseDTO result = service.getPermissionById(id);
 
-        assertThat(result).isEqualTo(dto);
+        assertEquals("READ_USER", result.getName());
+        assertEquals("USER_MANAGEMENT", result.getCategory());
+        verify(mapper).toResponse(permission);
     }
 
     @Test
-    void deletePermission_shouldCallRepository() {
+    void testGetPermissionById_notFound() {
         UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> service.getPermissionById(id));
+    }
+
+    @Test
+    void testDeletePermission() {
+        UUID id = permission.getId();
+        doNothing().when(repository).deleteById(id);
 
         service.deletePermission(id);
 

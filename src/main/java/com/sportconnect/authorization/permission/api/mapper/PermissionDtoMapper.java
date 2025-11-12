@@ -15,3 +15,4 @@ public interface PermissionDtoMapper {
     void updateDomain(UpdatePermissionDTO dto, @MappingTarget Permission permission);
     List<PermissionResponseDTO> toResponseList(List<Permission> permissions);
 }
+

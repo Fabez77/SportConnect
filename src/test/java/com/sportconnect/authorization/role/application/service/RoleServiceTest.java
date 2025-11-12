@@ -2,26 +2,29 @@ package com.sportconnect.authorization.role.application.service;
 
 import com.sportconnect.authorization.permission.domain.model.Permission;
 import com.sportconnect.authorization.permission.domain.repository.PermissionRepository;
-import com.sportconnect.authorization.role.api.dto.CreateRoleDTO;
-import com.sportconnect.authorization.role.api.dto.RoleResponseDTO;
-import com.sportconnect.authorization.role.api.dto.UpdateRoleDTO;
+import com.sportconnect.authorization.role.api.dto.*;
 import com.sportconnect.authorization.role.api.mapper.RoleDtoMapper;
 import com.sportconnect.authorization.role.application.service.impl.RoleServiceImpl;
 import com.sportconnect.authorization.role.domain.model.Role;
 import com.sportconnect.authorization.role.domain.repository.RoleRepository;
+import com.sportconnect.shared.datatable.dto.DataTableRequest;
+import com.sportconnect.shared.datatable.dto.DataTableResponse;
+import com.sportconnect.shared.datatable.service.DataTableService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RoleServiceTest {
+class RoleServiceImplTest {
 
     @Mock
     private RoleRepository repository;
@@ -32,173 +35,167 @@ class RoleServiceTest {
     @Mock
     private RoleDtoMapper mapper;
 
+    @Mock
+    private DataTableService dataTableService;
+
     @InjectMocks
     private RoleServiceImpl service;
 
-    private UUID roleId;
-    private UUID permId1;
-    private UUID permId2;
+    private Role role;
+    private RoleResponseDTO responseDTO;
     private Permission perm1;
     private Permission perm2;
 
     @BeforeEach
     void setUp() {
-        roleId = UUID.randomUUID();
-        permId1 = UUID.randomUUID();
-        permId2 = UUID.randomUUID();
+        UUID roleId = UUID.randomUUID();
+        UUID permId1 = UUID.randomUUID();
+        UUID permId2 = UUID.randomUUID();
+
         perm1 = Permission.builder().id(permId1).name("VIEW_USER").build();
         perm2 = Permission.builder().id(permId2).name("EDIT_USER").build();
-    }
 
-    @Test
-    void createRole_shouldResolvePermissionsAndReturnResponse() {
-        CreateRoleDTO dto = CreateRoleDTO.builder()
-                .name("MODERATOR")
-                .description(null)
-                .permissions(Set.of(permId1, permId2))
-                .build();
-
-        Role mapped = Role.builder()
-                .name("MODERATOR")
-                .description(null)
-                .permissions(null)
-                .build();
-
-        Role saved = Role.builder()
+        role = Role.builder()
                 .id(roleId)
-                .name("MODERATOR")
-                .description(null)
+                .name("ADMIN")
+                .description("Administrador")
                 .permissions(Set.of(perm1, perm2))
                 .build();
 
-        RoleResponseDTO response = RoleResponseDTO.builder()
+        responseDTO = RoleResponseDTO.builder()
                 .id(roleId)
-                .name("MODERATOR")
-                .description(null)
+                .name("ADMIN")
+                .description("Administrador")
                 .permissions(Set.of("VIEW_USER", "EDIT_USER"))
                 .build();
-
-        when(mapper.toDomain(dto)).thenReturn(mapped);
-        when(permissionRepository.findById(permId1)).thenReturn(Optional.of(perm1));
-        when(permissionRepository.findById(permId2)).thenReturn(Optional.of(perm2));
-        when(repository.save(any(Role.class))).thenReturn(saved);
-        when(mapper.toResponse(saved)).thenReturn(response);
-
-        RoleResponseDTO result = service.createRole(dto);
-
-        assertThat(result.getId()).isEqualTo(roleId);
-        assertThat(result.getName()).isEqualTo("MODERATOR");
-        assertThat(result.getPermissions()).containsExactlyInAnyOrder("VIEW_USER", "EDIT_USER");
     }
 
     @Test
-    void updateRole_shouldUpdateNameAndPermissions() {
+    void createRole_shouldReturnResponse() {
+        CreateRoleDTO dto = CreateRoleDTO.builder()
+                .name("ADMIN")
+                .description("Administrador")
+                .build();
+
+        // ✅ Usamos toDomain y toResponse
+        when(mapper.toDomain(dto)).thenReturn(role);
+        when(repository.save(role)).thenReturn(role);
+        when(mapper.toResponse(role)).thenReturn(responseDTO);
+
+        RoleResponseDTO result = service.createRole(dto);
+
+        assertThat(result.getName()).isEqualTo("ADMIN");
+        assertThat(result.getDescription()).isEqualTo("Administrador");
+        verify(mapper).toDomain(dto);
+        verify(mapper).toResponse(role);
+        verify(repository).save(role);
+    }
+
+    @Test
+    void updateRole_shouldUpdateNameAndDescription() {
         UpdateRoleDTO dto = UpdateRoleDTO.builder()
                 .name("MANAGER")
-                .description(null)
-                .permissions(Set.of(permId1))
+                .description("Gestor de usuarios")
                 .build();
 
         Role existing = Role.builder()
-                .id(roleId)
+                .id(role.getId())
                 .name("OLD_NAME")
-                .description(null)
+                .description("Antiguo nombre")
                 .permissions(new HashSet<>())
                 .build();
 
         Role updated = Role.builder()
-                .id(roleId)
+                .id(role.getId())
                 .name("MANAGER")
-                .description(null)
-                .permissions(Set.of(perm1))
+                .description("Gestor de usuarios")
+                .permissions(existing.getPermissions())
                 .build();
 
         RoleResponseDTO response = RoleResponseDTO.builder()
-                .id(roleId)
+                .id(role.getId())
                 .name("MANAGER")
-                .description(null)
-                .permissions(Set.of("VIEW_USER"))
+                .description("Gestor de usuarios")
+                .permissions(Set.of("VIEW_USER", "EDIT_USER"))
                 .build();
 
-        when(repository.findById(roleId)).thenReturn(Optional.of(existing));
+        when(repository.findById(role.getId())).thenReturn(Optional.of(existing));
+
+        // ✅ Usamos updateDomain
         doAnswer(invocation -> {
             UpdateRoleDTO d = invocation.getArgument(0);
             Role r = invocation.getArgument(1);
             r.setName(d.getName());
+            r.setDescription(d.getDescription());
             return null;
         }).when(mapper).updateDomain(eq(dto), eq(existing));
-        when(permissionRepository.findById(permId1)).thenReturn(Optional.of(perm1));
+
         when(repository.save(existing)).thenReturn(updated);
         when(mapper.toResponse(updated)).thenReturn(response);
 
-        RoleResponseDTO result = service.updateRole(roleId, dto);
+        RoleResponseDTO result = service.updateRole(role.getId(), dto);
 
         assertThat(result.getName()).isEqualTo("MANAGER");
-        assertThat(result.getPermissions()).containsExactly("VIEW_USER");
+        assertThat(result.getDescription()).isEqualTo("Gestor de usuarios");
+        assertThat(result.getPermissions()).containsExactlyInAnyOrder("VIEW_USER", "EDIT_USER");
+        verify(mapper).updateDomain(dto, existing);
+        verify(mapper).toResponse(updated);
     }
 
     @Test
-    void getAllRoles_shouldReturnMappedList() {
-        Role role1 = Role.builder()
-                .id(UUID.randomUUID())
-                .name("ADMIN")
-                .description(null)
-                .permissions(Set.of(perm1))
+    void getRoles_shouldReturnPagedResponse() {
+        DataTableRequest request = DataTableRequest.builder()
+                .page(0).size(10).sortBy("name").direction("ASC")
+                .filters(Map.of("name", "ADMIN"))
+                .search("ADMIN")
                 .build();
 
-        Role role2 = Role.builder()
-                .id(UUID.randomUUID())
-                .name("COACH")
-                .description(null)
-                .permissions(Set.of(perm2))
-                .build();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+        Page<Role> page = new PageImpl<>(List.of(role), pageable, 1);
 
-        RoleResponseDTO dto1 = RoleResponseDTO.builder()
-                .id(role1.getId())
-                .name("ADMIN")
-                .description(null)
-                .permissions(Set.of("VIEW_USER"))
-                .build();
+        when(dataTableService.buildPageable(request)).thenReturn(pageable);
+        when(repository.findAll(request.getFilters(), request.getSearch(), pageable)).thenReturn(page);
 
-        RoleResponseDTO dto2 = RoleResponseDTO.builder()
-                .id(role2.getId())
-                .name("COACH")
-                .description(null)
-                .permissions(Set.of("EDIT_USER"))
-                .build();
+        // ✅ Usamos toResponse para cada Role
+        when(mapper.toResponse(role)).thenReturn(responseDTO);
 
-        when(repository.findAll()).thenReturn(List.of(role1, role2));
-        when(mapper.toResponse(role1)).thenReturn(dto1);
-        when(mapper.toResponse(role2)).thenReturn(dto2);
+        DataTableResponse<RoleResponseDTO> expectedResponse =
+                DataTableResponse.<RoleResponseDTO>builder()
+                        .data(List.of(responseDTO))
+                        .totalElements(1)
+                        .totalPages(1)
+                        .currentPage(0)
+                        .build();
 
-        List<RoleResponseDTO> result = service.getAllRoles();
+        when(dataTableService.buildResponse(ArgumentMatchers.<Page<RoleResponseDTO>>any()))
+        .thenReturn(expectedResponse);
 
-        assertThat(result).hasSize(2);
-        assertThat(result).extracting(RoleResponseDTO::getName).containsExactlyInAnyOrder("ADMIN", "COACH");
+
+
+        DataTableResponse<RoleResponseDTO> result = service.getRoles(request);
+
+        assertThat(result.getData()).hasSize(1);
+        assertThat(result.getData().get(0).getName()).isEqualTo("ADMIN");
+        verify(mapper).toResponse(role);
     }
 
     @Test
-    void getRoleById_shouldReturnMappedRole() {
-        Role role = Role.builder()
-                .id(roleId)
-                .name("PLAYER")
-                .description(null)
-                .permissions(Set.of(perm1))
-                .build();
+    void getRoleById_shouldReturnResponse() {
+        when(repository.findById(role.getId())).thenReturn(Optional.of(role));
+        when(mapper.toResponse(role)).thenReturn(responseDTO);
 
-        RoleResponseDTO dto = RoleResponseDTO.builder()
-                .id(roleId)
-                .name("PLAYER")
-                .description(null)
-                .permissions(Set.of("VIEW_USER"))
-                .build();
+        RoleResponseDTO result = service.getRoleById(role.getId());
 
-        when(repository.findById(roleId)).thenReturn(Optional.of(role));
-        when(mapper.toResponse(role)).thenReturn(dto);
+        assertThat(result.getName()).isEqualTo("ADMIN");
+        verify(mapper).toResponse(role);
+    }
 
-        RoleResponseDTO result = service.getRoleById(roleId);
+    @Test
+    void getRoleById_shouldThrowExceptionWhenNotFound() {
+        UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
 
-        assertThat(result.getName()).isEqualTo("PLAYER");
+        assertThrows(RuntimeException.class, () -> service.getRoleById(id));
     }
 
     @Test
@@ -208,5 +205,39 @@ class RoleServiceTest {
         service.deleteRole(id);
 
         verify(repository).deleteById(id);
+    }
+
+    @Test
+    void assignPermissions_shouldUpdateRolePermissions() {
+        UUID roleId = role.getId();
+        List<UUID> permissionIds = List.of(perm1.getId(), perm2.getId());
+
+        when(repository.findById(roleId)).thenReturn(Optional.of(role));
+        when(permissionRepository.findAllById(permissionIds)).thenReturn(List.of(perm1, perm2));
+
+        service.assignPermissions(roleId, permissionIds);
+
+        assertThat(role.getPermissions()).containsExactlyInAnyOrder(perm1, perm2);
+        verify(repository).save(role);
+    }
+
+    @Test
+    void assignPermissions_shouldThrowExceptionWhenMissingPermissions() {
+        UUID roleId = role.getId();
+        List<UUID> permissionIds = List.of(perm1.getId(), perm2.getId());
+
+        when(repository.findById(roleId)).thenReturn(Optional.of(role));
+        when(permissionRepository.findAllById(permissionIds)).thenReturn(List.of(perm1)); // falta uno
+
+        assertThrows(IllegalArgumentException.class, () -> service.assignPermissions(roleId, permissionIds));
+    }
+
+    @Test
+    void getRolePermissionIds_shouldReturnPermissionIds() {
+        when(repository.findById(role.getId())).thenReturn(Optional.of(role));
+
+        RolePermissionsResponse result = service.getRolePermissionIds(role.getId());
+
+        assertThat(result.getPermissions()).containsExactlyInAnyOrder(perm1.getId(), perm2.getId());
     }
 }
