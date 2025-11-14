@@ -8,4 +8,6 @@ public interface JwtService {
     boolean validateToken(String token);
     String extractUsername(String token);
     UUID extractUserId(String token);
+    List<String> extractRoles(String token);
+    List<String> extractPermissions(String token);
 }

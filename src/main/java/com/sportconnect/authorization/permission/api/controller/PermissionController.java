@@ -10,6 +10,7 @@ import com.sportconnect.shared.datatable.dto.DataTableResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -22,12 +23,14 @@ public class PermissionController {
     private final PermissionService permissionService;
     private final ApiResponseService responseService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<PermissionResponseDTO>> create(@Valid @RequestBody CreatePermissionDTO dto) {
         PermissionResponseDTO permission = permissionService.createPermission(dto);
         return responseService.success(HttpStatus.CREATED, "Permiso creado", permission);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PermissionResponseDTO>> update(
             @PathVariable UUID id,
@@ -36,12 +39,14 @@ public class PermissionController {
         return responseService.success(HttpStatus.OK, "Permiso actualizado", updated);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PermissionResponseDTO>> getById(@PathVariable UUID id) {
         PermissionResponseDTO permission = permissionService.getPermissionById(id);
         return responseService.success(HttpStatus.OK, "Permiso encontrado", permission);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<DataTableResponse<PermissionResponseDTO>>> getPermissions(
             DataTableRequest request) {
@@ -49,6 +54,7 @@ public class PermissionController {
         return responseService.success(HttpStatus.OK, "Lista de permisos paginada", permissions);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         permissionService.deletePermission(id);
