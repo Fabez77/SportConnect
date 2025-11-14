@@ -10,7 +10,6 @@ spring:
     show-sql: true
     open-in-view: false
 
-  jwt:
-    secret: "4dc74a91b7650c633c3765b809a9d3d0"
-    expiration: 3600000 # 1 hora en milisegundos
-
+jwt:
+  secret: "4dc74a91b7650c633c3765b809a9d3d0"
+  expiration: 3600000
